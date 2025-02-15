@@ -65,7 +65,7 @@ public class SceneChanger : MonoBehaviour
 	private string fallback = "yes";
 	private Dictionary<int, string> allUrls = null;
 
-	public void ChangeScene(string sceneName)
+	private void ChangeScene(string sceneName)
 	{
 		if (SceneManager.GetActiveScene().name == sceneName) 
 		{
@@ -229,10 +229,22 @@ public class SceneChanger : MonoBehaviour
 			chosenScene = "ERROR";
 		}
 		
+	}
+
+
+	public IEnumerator IsValid()
+	{
+		if (chosenScene == null) // not finished call to backend
+			yield return null;
+			
+		yield return (chosenScene);
+	}
+
+	public void StartThisNow()
+	{
 		// now change scene
 		ChangeScene(chosenScene);
 	}
-
 
 	private void SetInternals(string response) 
 	{
