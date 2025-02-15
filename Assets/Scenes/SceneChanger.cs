@@ -107,7 +107,17 @@ public class SceneChanger : MonoBehaviour
 		Dictionary<string,string> paras =  URLParameters.GetSearchParameters();
 		this.token = paras.GetString("token", "empty");
 		this.server = paras.GetString("server", "http://localhost:5202");
-		this.fallback = paras.GetString("fallback", "no");
+		
+		if (Application.platform == RuntimePlatform.WebGLPlayer)
+		{
+			this.fallback = paras.GetString("fallback", "no");
+		}
+		else
+		{
+			Debug.LogError("USING FALLBACK => NO WEBGL!");
+			this.fallback = paras.GetString("fallback", "yes");
+		}
+		
 		
 		Debug.Log("Parameter Value token = "+this.token);
 		Debug.Log("Parameter Value server = "+this.server);
@@ -117,12 +127,12 @@ public class SceneChanger : MonoBehaviour
 			""name"": ""abc"",
 			""id"": 12344,
 			""memorylandType"" : {
-				""name"" : ""forest"",
+				""name"" : ""island"",
 				""photoAmount"" : 10
 				} ,
 			""memorylandConfigurations"" : [
 				{
-					""position"" : 40,
+					""position"" : 0,
 					""photo"" : ""https://isabel0unity0storage.blob.core.windows.net/images/somefoto/20190215_064143.jpg?sp=r&st=2024-10-13T17:36:59Z&se=2025-10-14T01:36:59Z&spr=https&sv=2022-11-02&sr=b&sig=%2B15dkN7t51JvBwQ54KD7DzU%2FqSD7OpHkGlYLGqLQJeI%3D""
 				},
 				{
