@@ -39,7 +39,7 @@ public class StartupDocument : MonoBehaviour
         }
         
         
-        if (chosenScene != "ERROR") {
+        if (chosenScene!=null && chosenScene != "ERROR") {
         	Debug.Log("Finished!");
         	_loading.text = "Finished Loading " + chosenScene;
         	_start.SetEnabled(true);
@@ -47,7 +47,7 @@ public class StartupDocument : MonoBehaviour
         }
         else 
         {
-	        _loading.text = "ERROR Loading " + chosenScene;
+	        _loading.text = "Sorry, ERROR Loading this Memoryland. Possibly Token invalid!";
 	        Debug.Log("ERROR loading");
         }
     }
