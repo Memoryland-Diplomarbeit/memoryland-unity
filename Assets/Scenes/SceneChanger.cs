@@ -59,75 +59,13 @@ public class Memoryland
 
 public class SceneChanger : MonoBehaviour
 {
-	private string chosenScene = null;
-	private string token = null;
-	private string server = "localhost";
-	private string fallback = "yes";
-	private Dictionary<int, string> allUrls = null;
 
-	private void ChangeScene(string sceneName)
-	{
-		if (SceneManager.GetActiveScene().name == sceneName) 
-		{
-			Debug.Log("Scene " + sceneName + " already active!");
-		}
-		else 
-		{
-			Debug.Log("Change Scene to " + sceneName);
-			SceneManager.LoadScene (sceneName);
-		}
-	}
-	
-	public void Exit()
-	{
-		Application.Quit ();
-	}
-
-
-	public IEnumerator GetOnePhoto(int position)
-	{
-		if (allUrls == null) // not finished call to backend
-			yield return null;
-			
-		if (allUrls.ContainsKey(position)) {
-			yield return allUrls[position];
-		}
-		else 
-		{
-			Debug.Log(position.ToString() + " NOT FOUND in MemoryLand!");
-			yield return null;
-		}
-	}
-
-
-	// Start is called before the first frame update
-	IEnumerator Start()
-	{
-		// first load the given token
-		Dictionary<string,string> paras =  URLParameters.GetSearchParameters();
-		this.token = paras.GetString("token", "empty");
-		this.server = paras.GetString("server", "http://localhost:5202");
-		
-		if (Application.platform == RuntimePlatform.WebGLPlayer)
-		{
-			this.fallback = paras.GetString("fallback", "no");
-		}
-		else
-		{
-			Debug.LogError("USING FALLBACK => NO WEBGL!");
-			this.fallback = paras.GetString("fallback", "yes");
-		}
-		
-		
-		Debug.Log("Parameter Value token = "+this.token);
-		Debug.Log("Parameter Value server = "+this.server);
-		Debug.Log("Parameter Value fallback = "+this.fallback);
-		// ....
-		string response = @"{
+	private static 
+		string fallbackResponse = @"{
 			""name"": ""abc"",
 			""id"": 12344,
 			""memorylandType"" : {
-				""name"" : ""island"",
+				""name"" : ""forest"",
 				""photoAmount"" : 10
 				} ,
 			""memorylandConfigurations"" : [
@@ -189,90 +127,202 @@ public class SceneChanger : MonoBehaviour
 				}
 			]
 			}";
-		
-		if (this.fallback == "yes")
+
+	private static string chosenScene = null;
+	private static string token = null;
+	private static string server = "https://app-memoryland.azurewebsites.net";
+	private static string fallback = "no";
+	private static Dictionary<int, string> allUrls = null;
+
+	private static Dictionary<int, Texture> allTextures = new Dictionary<int, Texture> ();
+
+	private void ChangeScene(string sceneName)
+	{
+		if (SceneManager.GetActiveScene().name == sceneName + "Scene") 
 		{
-			SetInternals(response);
-			Debug.LogError("Fallback is set => Using simulation init parameters to start with!");
+			Debug.Log("Scene " + sceneName + " already active!");
 		}
-		
-		// missing call to the url/backend
-		string uri = server+"/api/Memoryland?token=" + this.token;
-		
-		using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
+		else 
 		{
-		    yield return webRequest.SendWebRequest();
-		
-		    switch (webRequest.result)
+			Debug.Log("Change Scene to " + sceneName);
+			SceneManager.LoadScene (sceneName + "Scene");
+		}
+	}
+	
+	public void Exit()
+	{
+		Application.Quit ();
+	}
+
+
+	public IEnumerator GetOneTexture(int position)
+	{
+		if (SceneChanger.allUrls == null || SceneChanger.chosenScene == null) // not finished call to backend
+			yield return null;
+			
+		if (SceneChanger.allTextures.ContainsKey(position)) {
+			yield return SceneChanger.allTextures[position];
+		}
+		else 
+		{
+			Debug.Log(position.ToString() + " NOT FOUND in MemoryLand!");
+			yield return null;
+		}
+	}
+
+
+	IEnumerator LoadTexture (int id, string uri)
+	{
+		Debug.Log("Load Photo " + id.ToString() + " with " + uri);
+		Texture myTexture = null;
+		using (UnityWebRequest imageRequest = UnityWebRequestTexture.GetTexture(uri))
+		{
+		    yield return imageRequest.SendWebRequest();
+		    
+		    switch (imageRequest.result)
 		    {
 			case UnityWebRequest.Result.ConnectionError:
 			case UnityWebRequest.Result.DataProcessingError:
-			    Debug.LogError(server + ": Error: " + webRequest.error);
+			    Debug.LogError("Photo Error: " + imageRequest.error);
 			    break;
 			case UnityWebRequest.Result.ProtocolError:
-			    Debug.LogError(server + ": HTTP Error: " + webRequest.error);
+			    Debug.LogError("Photo HTTP Error: " + imageRequest.error);
 			    break;
 			case UnityWebRequest.Result.Success:
-			    Debug.Log(server + ":\nReceived: " + webRequest.downloadHandler.text);
-			    response = webRequest.downloadHandler.text;
-			    SetInternals(response);
+			    Debug.Log("Received Photo " + id.ToString() + " with " + uri);
+			    //
+			    myTexture = DownloadHandlerTexture.GetContent(imageRequest);
+			    SceneChanger.allTextures[id] = myTexture;
 			    break;
 			default:
-			    Debug.LogError(server + ": unknown " + webRequest.result.ToString());
+			    Debug.LogError("Photo unknown result: " + imageRequest.result.ToString());
 			    break;
-		    }
-    		}
+		    }	    
+		}
+    		yield return "Loaded";
+    	}
 		
 
-		// now set the scene
-		if (chosenScene == null) {
-			chosenScene = "ERROR";
-		}
-		
+	// Start is called before the first frame update
+	IEnumerator Start()
+	{
+		// already loaded?
+		if (SceneChanger.token == null && SceneChanger.chosenScene == null) 
+		{
+			// first load the given token
+			Dictionary<string,string> paras =  URLParameters.GetSearchParameters();
+			SceneChanger.token = paras.GetString("token", "");
+			SceneChanger.server = paras.GetString("server", "https://app-memoryland.azurewebsites.net");
+			
+			if (Application.platform == RuntimePlatform.WebGLPlayer)
+			{
+				SceneChanger.fallback = paras.GetString("fallback", "no");
+			}
+			else
+			{
+				SceneChanger.fallback = paras.GetString("fallback", "no");
+				SceneChanger.token = paras.GetString("token", "db878670-6d7b-49a5-9d09-b1e55a7c0a5e");
+			}
+			
+			Debug.Log("Parameter Value token = " + SceneChanger.token);
+			Debug.Log("Parameter Value server = " + SceneChanger.server);
+			Debug.Log("Parameter Value fallback = " + SceneChanger.fallback);
+			
+			if (SceneChanger.fallback == "yes")
+			{
+				yield return SetInternals(SceneChanger.fallbackResponse);
+				Debug.LogError("Fallback is set => Using simulation init parameters to start with!");
+			}
+			else
+			{
+				// missing call to the url/backend
+				string uri = SceneChanger.server+"/api/Memoryland?token=" + SceneChanger.token;
+				string response = "";
+				
+				using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
+				{
+				    yield return webRequest.SendWebRequest();
+				
+				    switch (webRequest.result)
+				    {
+					case UnityWebRequest.Result.ConnectionError:
+					case UnityWebRequest.Result.DataProcessingError:
+					    Debug.LogError(SceneChanger.server + ": Error: " + webRequest.error);
+					    break;
+					case UnityWebRequest.Result.ProtocolError:
+					    Debug.LogError(SceneChanger.server + ": HTTP Error: " + webRequest.error);
+					    break;
+					case UnityWebRequest.Result.Success:
+					    Debug.Log(SceneChanger.server + ": Received: " + webRequest.downloadHandler.text);
+					    response = webRequest.downloadHandler.text;
+					    yield return SetInternals(response);
+					    break;
+					default:
+					    Debug.LogError(SceneChanger.server + ": unknown " + webRequest.result.ToString());
+					    break;
+				    }
+		    		}
+		    	}
+		}		
 	}
 
 
 	public IEnumerator IsValid()
 	{
-		if (chosenScene == null) // not finished call to backend
+		if (SceneChanger.chosenScene == null) // not finished call to backend
 			yield return null;
 			
-		yield return (chosenScene);
+		yield return (SceneChanger.chosenScene);
 	}
 
 	public void StartThisNow()
 	{
 		// now change scene
-		ChangeScene(chosenScene);
+		ChangeScene(SceneChanger.chosenScene);
 	}
 
-	private void SetInternals(string response) 
+	private IEnumerator SetInternals(string response) 
 	{
+		Debug.Log("setInternals now with ");
 		if (response != null) {
 		
-			Memoryland ml = Memoryland.CreateFromJSON(response);
-		
-			if (ml.memorylandType != null && ml.memorylandType.name != null ) {
-				chosenScene = ml.memorylandType.name + "Scene";
-				Debug.Log("Got Scene from response: " + chosenScene);
+			Memoryland ml = null;
+			try {
+				ml = Memoryland.CreateFromJSON(response);
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Error Reading response! " + e.ToString());
 			}
 			
-			if (ml.memorylandConfigurations != null) {
-				allUrls = new Dictionary<int, string>();
-				foreach (MemorylandConfiguration item in ml.memorylandConfigurations) {
-					allUrls[item.position] = item.photo;
+			if (ml != null) 
+			{
+				if (ml.memorylandConfigurations != null) {
+					SceneChanger.allUrls = new Dictionary<int, string>();
+					foreach (MemorylandConfiguration item in ml.memorylandConfigurations) {
+						Debug.Log("got one photo " + item.position.ToString());
+						SceneChanger.allUrls[item.position] = item.photo;
+						yield return LoadTexture(item.position, item.photo);
+					}
+				}
+
+				// always set the pics first
+				if (ml.memorylandType != null && ml.memorylandType.name != null ) {
+					SceneChanger.chosenScene = ml.memorylandType.name;
+					Debug.Log("Got Scene from response: " + chosenScene);
 				}
 			}
 		}
 		
-		if (allUrls != null) 
+		if (SceneChanger.allUrls == null) 
 		{
-			Debug.Log(string.Join(Environment.NewLine, allUrls));
-		} 
+			SceneChanger.chosenScene = "ERROR";
+			Debug.LogError("no URLs loaded!");
+		}/*
 		else 
 		{
-			Debug.Log("no URLs loaded!");
-		}	
+			Debug.Log(string.Join(Environment.NewLine, SceneChanger.allUrls));
+		} */
 	}
 
 	

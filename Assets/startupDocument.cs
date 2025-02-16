@@ -27,19 +27,18 @@ public class StartupDocument : MonoBehaviour
     private IEnumerator LoadFromLikeCoroutine()
     {
     	
-        IEnumerator tgt = FindAnyObjectByType<SceneChanger>().IsValid();
-        while (tgt.MoveNext()) 
-        {
-        	chosenScene = (string)tgt.Current;
-        	yield return chosenScene;
+        
+        while (chosenScene == null) {
+		IEnumerator tgt = FindAnyObjectByType<SceneChanger>().IsValid();
+		while (tgt.MoveNext()) 
+		{
+			chosenScene = (string)tgt.Current;
+			yield return chosenScene;
+		}
         }
         
-        if (chosenScene == null) {
-        	yield return null;
-        }
         
-        
-        if (chosenScene!=null && chosenScene != "ERROR") {
+        if (chosenScene != "ERROR") {
         	Debug.Log("Finished!");
         	_loading.text = "Finished Loading " + chosenScene;
         	_start.SetEnabled(true);
