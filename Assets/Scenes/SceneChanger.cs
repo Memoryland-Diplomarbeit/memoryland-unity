@@ -221,7 +221,7 @@ public class SceneChanger : MonoBehaviour
 			else
 			{
 				SceneChanger.fallback = paras.GetString("fallback", "no");
-				SceneChanger.token = paras.GetString("token", "db878670-6d7b-49a5-9d09-b1e55a7c0a5e");
+				SceneChanger.token = paras.GetString("token", "43e168bc-6f02-494a-aedf-1e933df7d5c2");
 			}
 			
 			Debug.Log("Parameter Value token = " + SceneChanger.token);
