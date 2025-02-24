@@ -138,7 +138,7 @@ public class SceneChanger : MonoBehaviour
 
 	private void ChangeScene(string sceneName)
 	{
-		if (SceneManager.GetActiveScene().name == sceneName + "Scene") 
+		if (SceneManager.GetActiveScene().name == sceneName + "Scene" || (sceneName == "ERROR"))
 		{
 			Debug.Log("Scene " + sceneName + " already active!");
 		}
@@ -221,7 +221,7 @@ public class SceneChanger : MonoBehaviour
 			else
 			{
 				SceneChanger.fallback = paras.GetString("fallback", "no");
-				SceneChanger.token = paras.GetString("token", "43e168bc-6f02-494a-aedf-1e933df7d5c2");
+				SceneChanger.token = paras.GetString("token", "1920cf9e-b295-4c80-b347-75eff21a71f6");
 			}
 			
 			Debug.Log("Parameter Value token = " + SceneChanger.token);
@@ -248,9 +248,11 @@ public class SceneChanger : MonoBehaviour
 					case UnityWebRequest.Result.ConnectionError:
 					case UnityWebRequest.Result.DataProcessingError:
 					    Debug.LogError(SceneChanger.server + ": Error: " + webRequest.error);
+		    			    SceneChanger.chosenScene = "ERROR";
 					    break;
 					case UnityWebRequest.Result.ProtocolError:
 					    Debug.LogError(SceneChanger.server + ": HTTP Error: " + webRequest.error);
+		    			    SceneChanger.chosenScene = "ERROR";
 					    break;
 					case UnityWebRequest.Result.Success:
 					    Debug.Log(SceneChanger.server + ": Received: " + webRequest.downloadHandler.text);
@@ -259,6 +261,7 @@ public class SceneChanger : MonoBehaviour
 					    break;
 					default:
 					    Debug.LogError(SceneChanger.server + ": unknown " + webRequest.result.ToString());
+		    			    SceneChanger.chosenScene = "ERROR";
 					    break;
 				    }
 		    		}
