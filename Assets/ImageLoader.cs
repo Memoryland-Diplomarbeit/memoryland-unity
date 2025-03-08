@@ -22,18 +22,6 @@ public class ImageLoader : MonoBehaviour
         StartCoroutine(LoadFromLikeCoroutine()); // execute the section independently
     }
 
-    /*
-     * get image.width && image.height 
-     * 
-     * Canvas canvas = FindObjectOfType<Canvas>();
-     *
-     * float h = canvas.GetComponent<RectTransform>().rect.height;
-     * float w = canvas.GetComponent<RectTransform>().rect.width;
-     * 
-     * 
-     * thisRenderer.transform.localScale = new Vector3();
-     */
-
     // this section will be run independently
     private IEnumerator LoadFromLikeCoroutine()
     {
@@ -57,38 +45,24 @@ public class ImageLoader : MonoBehaviour
 	}
 	else 
 	{
-		/* too slow	
-		UnityWebRequest imageRequest = UnityWebRequestTexture.GetTexture(thisPhoto);
-		yield return imageRequest.SendWebRequest();
-		*/
 		Debug.Log("Loaded");
 
 		thisRenderer.material.color = Color.white;          // set white
-		//Texture myTexture = DownloadHandlerTexture.GetContent(imageRequest);
 
 		float scale = 0.3f;
 
 		//thisRenderer.gameObject.
 		if (myTexture.height > myTexture.width)
 		{
-			//float f = ((float)myTexture.height * (float)0.5) / ((float)myTexture.width * (float)0.5);
 			float f = (float)myTexture.height / (float)myTexture.width * scale;
 			thisRenderer.transform.localScale = new Vector3(scale, scale, f);
-			//thisRenderer.material.SetTextureScale("_MainTex", new Vector2(1f, 0.5f));
-
 		}
 		else
 		{
-			//float f = ((float)myTexture.width * (float)0.5) / ((float)myTexture.height * (float)0.5);
 			float f = (float)myTexture.width / (float)myTexture.height * scale;
 			thisRenderer.transform.localScale = new Vector3(f, scale, scale);
-			//thisRenderer.material.SetTextureScale("_MainTex", new Vector2(0.5f, 1f));
-
 		}
 
-		//myTexture.
-		//thisRenderer.material.SetShaderPassEnabled("RayTracingPrepass", false);
-		//thisRenderer.material.SetShaderPassEnabled
 		thisRenderer.material.mainTexture = myTexture ;  // set loaded image
 	}
     }
