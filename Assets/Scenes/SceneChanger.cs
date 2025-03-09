@@ -8,25 +8,6 @@ using UnityEngine.UIElements;
 
 
 
-public class CoroutineWithData {
-    public Coroutine coroutine { get; private set; }
-    public object result;
-    private IEnumerator target;
-
-    public CoroutineWithData(MonoBehaviour owner, IEnumerator target) {
-	    this.target = target;
-	    this.coroutine = owner.StartCoroutine(Run());
-    }
-
-	private IEnumerator Run() {
-        while(target.MoveNext()) {
-            result = target.Current;
-            yield return result;
-        }
-    }
-}
-
-
 [System.Serializable]
 public class MemorylandType
 {
@@ -221,7 +202,9 @@ public class SceneChanger : MonoBehaviour
 			else
 			{
 				SceneChanger.fallback = paras.GetString("fallback", "no");
-				SceneChanger.token = paras.GetString("token", "1920cf9e-b295-4c80-b347-75eff21a71f6");
+				// a forest 1920cf9e-b295-4c80-b347-75eff21a71f6
+				SceneChanger.token = paras.GetString("token", "d2f177e8-6be9-449c-b494-ec5aa5e6bf74");
+				// an island d2f177e8-6be9-449c-b494-ec5aa5e6bf74
 			}
 			
 			Debug.Log("Parameter Value token = " + SceneChanger.token);
